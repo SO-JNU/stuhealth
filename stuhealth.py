@@ -1,4 +1,3 @@
-import argparse
 import base64
 import json
 import os
@@ -16,6 +15,8 @@ def checkin(jnuid, username, password, log, silent):
 
     try:
         if not jnuid:
+            if not username or not password:
+                raise Exception('Invalid username or password')
             if not silent:
                 print('Trying to login and get JNUID with username and password')
             try:
@@ -95,55 +96,3 @@ def checkin(jnuid, username, password, log, silent):
         if log:
             with open(log, 'a+') as f:
                 f.write(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] JNUID: {jnuid} {result}\n')
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3',
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-    parser.add_argument(
-        '-j',
-        '--jnuid',
-        required=False,
-        type=str,
-        help='Use JNUID to make a check-in directly, or leave it blank and login with username and password.'
-    )
-    parser.add_argument(
-        '-u',
-        '--username',
-        required=False,
-        type=str,
-        help='Used for login.'
-    )
-    parser.add_argument(
-        '-p',
-        '--password',
-        required=False,
-        type=str,
-        help='Used for login.'
-    )
-    parser.add_argument(
-        '-l',
-        '--log',
-        required=False,
-        type=str,
-        help='Write log to the specified path.'
-    )
-    parser.add_argument(
-        '-s',
-        '--silent',
-        action='store_true',
-        help='Slient mode.'
-    )
-    args = parser.parse_args()
-
-    if not args.jnuid and (not args.username or not args.password):
-        parser.print_help()
-        exit(0)
-
-    try:
-        checkin(args.jnuid, args.username, args.password, args.log, args.silent)
-    except Exception as ex:
-        if not args.silent:
-            print(f'Failed to check in: {type(ex).__name__} {ex}')
-        exit(-1)
