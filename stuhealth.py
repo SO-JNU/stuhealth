@@ -10,6 +10,7 @@ from Crypto.Util.Padding import pad
 def checkin(jnuid, username, password, log, silent):
     key = b'xAt9Ye&SouxCJziN'
     cipher = AES.new(key, AES.MODE_CBC, key)
+    randomForwardedFor = lambda: '.'.join(str(random.randint(0, 255)) for x in range(4))
     success = False
     result = 'Failed to check in: '
 
@@ -28,7 +29,7 @@ def checkin(jnuid, username, password, log, silent):
                     }),
                     headers={
                         'Content-Type': 'application/json',
-                        'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for x in range(4)),
+                        'X-Forwarded-For': randomForwardedFor(),
                     }
                 ).json()['data']['jnuid']
             except Exception as ex:
@@ -43,7 +44,7 @@ def checkin(jnuid, username, password, log, silent):
             }),
             headers={
                 'Content-Type': 'application/json',
-                'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for x in range(4)),
+                'X-Forwarded-For': randomForwardedFor(),
             }
         ).json()
         if not checkinInfo['meta']['success']:
@@ -63,7 +64,7 @@ def checkin(jnuid, username, password, log, silent):
             }),
             headers={
                 'Content-Type': 'application/json',
-                'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for x in range(4)),
+                'X-Forwarded-For': randomForwardedFor(),
             }
         ).json()['data']['mainTable']
 
@@ -81,7 +82,7 @@ def checkin(jnuid, username, password, log, silent):
             }),
             headers={
                 'Content-Type': 'application/json',
-                'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for x in range(4)),
+                'X-Forwarded-For': randomForwardedFor(),
             }
         ).json()
         success = submit['meta']['success']

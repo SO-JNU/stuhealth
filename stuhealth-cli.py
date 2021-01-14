@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 
 parser = argparse.ArgumentParser(
-    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3',
+    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3\nAuthor: Akarin',
     formatter_class=argparse.RawTextHelpFormatter
 )
 parser.add_argument(
@@ -87,4 +87,3 @@ if args.multithread and len(checkinList) > 1:
 else:
     for item in checkinList:
         run(item['jnuid'], item['username'], item['password'], args.log, args.silent)
-
