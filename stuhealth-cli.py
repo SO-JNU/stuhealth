@@ -1,6 +1,7 @@
 import argparse
 import json
 import stuhealth
+import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
@@ -68,7 +69,7 @@ if args.batch:
 else:
     if not args.jnuid and (not args.username or not args.password):
         parser.print_help()
-        exit(0)
+        sys.exit(0)
     checkinList = [vars(args)]
 
 def run(jnuid, username, password, log, silent):
