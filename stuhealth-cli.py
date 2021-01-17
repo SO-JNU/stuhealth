@@ -6,8 +6,14 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
 
+IS_PYINSTALLER = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+if IS_PYINSTALLER:
+    from _version import GIT_COMMIT_HASH
+    from _version import GIT_COMMIT_TIME
+
 parser = argparse.ArgumentParser(
-    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3\nAuthor: Akarin' + (f'\nCommit: {GIT_COMMIT_HASH} ({GIT_COMMIT_TIME})' if sys._MEIPASS else ''),
+    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3\nAuthor: Akarin' + (f'\nCommit: {GIT_COMMIT_HASH} ({GIT_COMMIT_TIME})' if IS_PYINSTALLER else ''),
     formatter_class=argparse.RawTextHelpFormatter
 )
 parser.add_argument(
