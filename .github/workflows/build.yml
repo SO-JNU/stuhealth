@@ -25,7 +25,7 @@ jobs:
       - name: Build executable
         run: |
           python get-version.py > _version.py
-          pyinstaller --clean --console --onefile --icon=NONE --upx-exclude=vcruntime140.dll stuhealth-cli.py
+          pyinstaller --clean --console --onefile --icon=NONE --upx-exclude=vcruntime140.dll --hidden-import=_version stuhealth-cli.py
       - name: Upload result
         uses: actions/upload-artifact@v2
         with:
