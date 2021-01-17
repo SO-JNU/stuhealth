@@ -2,6 +2,10 @@
 
 使用 Python 编写的每日健康打卡命令行工具。
 
+> Windows 用户可以在[这里](https://github.com/SO-JNU/stuhealth/actions)直接下载使用 PyInstaller 打包的可执行文件。
+>
+> ![build](https://github.com/SO-JNU/stuhealth/workflows/build/badge.svg)
+
 ## 快速上手
 
 ```bash
