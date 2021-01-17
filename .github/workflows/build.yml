@@ -10,11 +10,6 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/set-timezone-action@v1
-        with:
-          timezoneLinux: Asia/Shanghai
-          timezoneMacos: Asia/Shanghai
-          timezoneWindows: China Standard Time
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
@@ -26,6 +21,7 @@ jobs:
           pip install -r requirements.txt
           pip install pyinstaller
           choco install upx
+          tzutil /s "China Standard Time"
       - name: Build executable
         run: pyinstaller --clean --console --onefile --icon=NONE --upx-exclude=vcruntime140.dll --runtime-hook=hook.py stuhealth-cli.py
       - name: Upload result
