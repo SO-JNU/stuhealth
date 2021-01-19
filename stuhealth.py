@@ -73,6 +73,11 @@ def checkin(jnuid, username, password, log, silent):
         mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
 
         if lastCheckin['secondTable'] is None:
+            if 'inChina' not in mainTable:
+                mainTable['inChina'] = '1'
+            for key in ['personC1', 'personC1id', 'personC2', 'personC2id', 'personC3', 'personC3id', 'personC4']:
+                if key not in mainTable:
+                    mainTable[key] = ''
             if mainTable['inChina'] == '1':
                 secondTable = {
                     'other1': mainTable['inChina'],
