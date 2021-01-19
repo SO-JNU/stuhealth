@@ -56,7 +56,8 @@ def checkin(jnuid, username, password, log, silent):
 
         if not silent:
             print(f'Fetching last checkin info #{checkinInfo["id"]} ({checkinInfo["date"]})')
-        mainTable = requests.post(
+
+        lastCheckin = requests.post(
             'https://stuhealth.jnu.edu.cn/api/user/review',
             json.dumps({
                 'jnuid': jnuid,
@@ -66,26 +67,49 @@ def checkin(jnuid, username, password, log, silent):
                 'Content-Type': 'application/json',
                 'X-Forwarded-For': randomForwardedFor(),
             }
-        ).json()['data']['mainTable']
+        ).json()['data']
 
-        deleteKey = ['personType', 'createTime', 'del', 'id']
-        deleteKey.extend(key for key in mainTable.keys() if mainTable[key] == '')
-        for key in deleteKey:
-            del mainTable[key]
+        mainTable = {k: v for k, v in lastCheckin['mainTable'].items() if v != '' and not k in ['personType', 'createTime', 'del', 'id']}
         mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
+
+        if lastCheckin['secondTable'] is None:
+            if mainTable['inChina'] == '1':
+                secondTable = {
+                    'other1': mainTable['inChina'],
+                    'other3': mainTable['personC4'],
+                    'other4': mainTable['personC1'],
+                    'other5': mainTable['personC1id'],
+                    'other6': mainTable['personC2'],
+                    'other7': mainTable['personC2id'],
+                    'other8': mainTable['personC3'],
+                    'other9': mainTable['personC3id'],
+                }
+            elif mainTable['inChina'] == '2':
+                secondTable = {
+                    'other1': mainTable['inChina'],
+                    'other2': mainTable['countryArea'],
+                    'other3': mainTable['personC4'],
+                }
+        else:
+            secondTable = {k: v for k, v in lastCheckin['secondTable'].items() if v != '' and not k in ['mainId', 'id']}
 
         submit = requests.post(
             'https://stuhealth.jnu.edu.cn/api/write/main',
-            json.dumps({
-                'jnuid': jnuid,
-                'mainTable': mainTable,
-            }),
+            json.dumps(
+                {
+                    'jnuid': jnuid,
+                    'mainTable': mainTable,
+                    'secondTable': secondTable,
+                },
+                ensure_ascii=False
+            ).encode('utf-8'),
             headers={
                 'Content-Type': 'application/json',
                 'X-Forwarded-For': randomForwardedFor(),
             }
         ).json()
         success = submit['meta']['success']
+
         if success:
             result = 'Checkin submitted.'
         else:
