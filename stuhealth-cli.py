@@ -63,6 +63,14 @@ parser.add_argument(
     action='store_true',
     help='Use multithreading for batch check-in. This is a experimental feature!'
 )
+parser.add_argument(
+    '-t',
+    '--thread',
+    required=False,
+    default=8,
+    type=int,
+    help='Number of threads for multithreading.'
+)
 args = parser.parse_args()
 
 if args.batch:
@@ -88,7 +96,7 @@ def run(jnuid, username, password, log, silent):
 if args.multithread and len(checkinList) > 1:
     if not args.silent:
         print('Warning: multithreading enabled, the output may be messed up.')
-    with ThreadPoolExecutor(8) as executor:
+    with ThreadPoolExecutor(args.thread) as executor:
         for item in checkinList:
             executor.submit(run, item['jnuid'], item['username'], item['password'], args.log, args.silent)
 else:
