@@ -1,2 +1,2 @@
-pycryptodome
-requests
+pycryptodome==3.*
+requests==2.*
