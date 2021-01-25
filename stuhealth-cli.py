@@ -69,7 +69,7 @@ parser.add_argument(
     required=False,
     default=8,
     type=int,
-    help='Number of threads for multithreading.'
+    help='Number of threads for multithreading. Default is 8.'
 )
 args = parser.parse_args()
 

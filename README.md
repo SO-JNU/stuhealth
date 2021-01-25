@@ -1,10 +1,8 @@
 # stuhealth
 
-使用 Python 编写的每日健康打卡命令行工具。
+[![build](https://github.com/SO-JNU/stuhealth/workflows/build/badge.svg)](https://github.com/SO-JNU/stuhealth/actions)
 
-> Windows 用户可以在[这里](https://github.com/SO-JNU/stuhealth/actions)直接下载使用 PyInstaller 打包的可执行文件。
->
-> ![build](https://github.com/SO-JNU/stuhealth/workflows/build/badge.svg)
+使用 Python 编写的每日健康打卡命令行工具。
 
 ## 快速上手
 
@@ -21,6 +19,16 @@ $ python3 stuhealth-cli.py -u 2017233333 -p p@SsW0Rd
 ```bash
 59 13 * * * python3 /path/to/stuhealth-cli.py -u 2017233333 -p p@SsW0Rd
 ```
+
+> 对于未安装 Python 的 Windows 用户：
+>
+> 可以在[这里](https://nightly.link/SO-JNU/stuhealth/workflows/build/master/stuhealth-cli)直接下载使用 PyInstaller 打包的可执行文件。
+>
+> 因为是命令行工具，所以需要在终端中运行（提示：在空白处按住 <kbd>Shift</kbd> 点击右键，选择“在此处打开 Powershell 窗口”可以打开终端），而不是直接双击。
+>
+> ```powershell
+> PS C:\path\to> .\stuhealth-cli -u 2017233333 -p p@SsW0Rd
+> ```
 
 ## 参数说明
 

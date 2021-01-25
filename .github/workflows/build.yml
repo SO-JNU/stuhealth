@@ -17,14 +17,12 @@ jobs:
           architecture: x64
       - name: Cache pip dependencies
         uses: actions/cache@v2
-        id: cache-pip
         with:
           path: ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
       - name: Install pip dependencies
         run: pip install -r requirements.txt
       - name: Install choco dependencies
-        if: steps.cache-choco.outputs.cache-hit != 'true'
         run: choco install choco-packages.config -y
       - name: Build executable
         run: |
