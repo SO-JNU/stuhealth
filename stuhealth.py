@@ -80,7 +80,7 @@ def checkin(jnuid, username, password, log, silent):
             headers=buildHeader()
         ).json()['data']
 
-        mainTable = {k: v for k, v in lastCheckin['mainTable'].items() if v != '' and not k in ['personType', 'createTime', 'del', 'id']}
+        mainTable = {k: v for k, v in lastCheckin['mainTable'].items() if v != '' and not k in ['personType', 'createTime', 'del', 'id', 'other', 'passAreaC2', 'passAreaC3', 'passAreaC4']}
         mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
 
         if lastCheckin['secondTable'] is None:
