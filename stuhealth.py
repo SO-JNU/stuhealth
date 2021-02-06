@@ -6,8 +6,28 @@ import requests
 import time
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+def buildHeader():
+    return {
+        'Content-Type': 'application/json',
+        'X-Forwarded-For': '.'.join(str(random.randint(0, 255)) for x in range(4)),
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko',
+    }
 
 def checkin(jnuid, username, password, log, silent):
+    s = requests.Session()
+    s.mount(
+        'https://',
+        HTTPAdapter(
+            max_retries=Retry(
+                total=3,
+                backoff_factor=0,
+                status_forcelist=[400, 405, 500, 501, 502, 503, 504]
+            )
+        )
+    )
     key = b'xAt9Ye&SouxCJziN'
     cipher = AES.new(key, AES.MODE_CBC, key)
     randomForwardedFor = lambda: '.'.join(str(random.randint(0, 255)) for x in range(4))
@@ -21,31 +41,25 @@ def checkin(jnuid, username, password, log, silent):
             if not silent:
                 print('Trying to login and get JNUID with username and password')
             try:
-                jnuid = requests.post(
+                jnuid = s.post(
                     'https://stuhealth.jnu.edu.cn/api/user/login',
                     json.dumps({
                         'username': username,
                         'password': base64.b64encode(cipher.encrypt(pad(password.encode(), 16))).decode(),
                     }),
-                    headers={
-                        'Content-Type': 'application/json',
-                        'X-Forwarded-For': randomForwardedFor(),
-                    }
+                    headers=buildHeader()
                 ).json()['data']['jnuid']
             except Exception as ex:
                 raise Exception('Failed to get JNUID')
         if not silent:
             print(f'JNUID: {jnuid}')
 
-        checkinInfo = requests.post(
+        checkinInfo = s.post(
             'https://stuhealth.jnu.edu.cn/api/user/stucheckin',
             json.dumps({
                 'jnuid': jnuid,
             }),
-            headers={
-                'Content-Type': 'application/json',
-                'X-Forwarded-For': randomForwardedFor(),
-            }
+            headers=buildHeader()
         ).json()
         if not checkinInfo['meta']['success']:
             raise Exception('Invalid JNUID')
@@ -57,16 +71,13 @@ def checkin(jnuid, username, password, log, silent):
         if not silent:
             print(f'Fetching last checkin info #{checkinInfo["id"]} ({checkinInfo["date"]})')
 
-        lastCheckin = requests.post(
+        lastCheckin = s.post(
             'https://stuhealth.jnu.edu.cn/api/user/review',
             json.dumps({
                 'jnuid': jnuid,
                 'id': str(checkinInfo["id"]),
             }),
-            headers={
-                'Content-Type': 'application/json',
-                'X-Forwarded-For': randomForwardedFor(),
-            }
+            headers=buildHeader()
         ).json()['data']
 
         mainTable = {k: v for k, v in lastCheckin['mainTable'].items() if v != '' and not k in ['personType', 'createTime', 'del', 'id']}
@@ -98,7 +109,7 @@ def checkin(jnuid, username, password, log, silent):
         else:
             secondTable = {k: v for k, v in lastCheckin['secondTable'].items() if v != '' and not k in ['mainId', 'id']}
 
-        submit = requests.post(
+        submit = s.post(
             'https://stuhealth.jnu.edu.cn/api/write/main',
             json.dumps(
                 {
@@ -108,10 +119,7 @@ def checkin(jnuid, username, password, log, silent):
                 },
                 ensure_ascii=False
             ).encode('utf-8'),
-            headers={
-                'Content-Type': 'application/json',
-                'X-Forwarded-For': randomForwardedFor(),
-            }
+            headers=buildHeader()
         ).json()
         success = submit['meta']['success']
 
