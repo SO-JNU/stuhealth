@@ -84,7 +84,7 @@ args = parser.parse_args()
 
 if IS_PYINSTALLER and not args.no_update_check:
     try:
-        repoInfoRequest = requests.get('https://api.github.com/repos/SO-JNU/stuhealth/branches/master')
+        repoInfoRequest = requests.get('https://api.github.com/repos/SO-JNU/stuhealth/branches/master', timeout=10)
         repoInfoRequest.raise_for_status()
         latestCommitDate = datetime.datetime.fromisoformat(repoInfoRequest.json()['commit']['commit']['committer']['date'].replace('Z','+00:00'))
         if latestCommitDate.timestamp() > GIT_COMMIT_TIMESTAMP:
@@ -96,7 +96,10 @@ if IS_PYINSTALLER and not args.no_update_check:
                 '\033[39m'
             )
     except Exception as ex:
-        print(f'Failed to check available update: {type(ex).__name__} {ex}')
+        print(
+            f'Failed to check available update: {type(ex).__name__} {ex}\n'
+            'You can disable update check by adding argument "--no-update-check".'
+        )
 
 if args.batch:
     checkinList = [{

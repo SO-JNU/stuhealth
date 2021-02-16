@@ -42,6 +42,7 @@ $ python3 stuhealth-cli.py -u 2017233333 -p p@SsW0Rd
 | `--silent` | `-s` | 不在终端中输出任何信息。 |
 | `--multithread` | `-m` | 使用多线程执行批量打卡（实验性功能）。 |
 | `--thread` | `-t` | 设置多线程时使用的线程数，默认为 8。 |
+| `--no-update-check` |  | 不在运行程序时检查是否有更新。 |
 | `--help` | `-h` | 显示参数说明。 |
 
 ## 批量打卡
