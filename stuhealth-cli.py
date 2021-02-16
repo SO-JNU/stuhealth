@@ -1,7 +1,9 @@
 import argparse
+import datetime
 import json
 import stuhealth
 import sys
+import requests
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import as_completed
@@ -11,6 +13,7 @@ IS_PYINSTALLER = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 if IS_PYINSTALLER:
     from _version import GIT_COMMIT_HASH
     from _version import GIT_COMMIT_TIME
+    from _version import GIT_COMMIT_TIMESTAMP
 
 parser = argparse.ArgumentParser(
     epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3\nAuthor: Akarin' + (f'\nCommit: {GIT_COMMIT_HASH} ({GIT_COMMIT_TIME})' if IS_PYINSTALLER else ''),
@@ -71,7 +74,29 @@ parser.add_argument(
     type=int,
     help='Number of threads for multithreading. Default is 8.'
 )
+if IS_PYINSTALLER:
+    parser.add_argument(
+        '--no-update-check',
+        action='store_true',
+        help='Don\'t check for available update of stuhealth.'
+    )
 args = parser.parse_args()
+
+if IS_PYINSTALLER and not args.no_update_check:
+    try:
+        repoInfoRequest = requests.get('https://api.github.com/repos/SO-JNU/stuhealth/branches/master')
+        repoInfoRequest.raise_for_status()
+        latestCommitDate = datetime.datetime.fromisoformat(repoInfoRequest.json()['commit']['commit']['committer']['date'].replace('Z','+00:00'))
+        if latestCommitDate.timestamp() > GIT_COMMIT_TIMESTAMP:
+            print(
+                '\033[96m'
+                'Update available!\n'
+                f'Download the latest version (committed at {latestCommitDate.strftime("%Y-%m-%d %H:%M:%S")})\n'
+                'from the GitHub repository!'
+                '\033[39m'
+            )
+    except Exception as ex:
+        print(f'Failed to check available update: {type(ex).__name__} {ex}')
 
 if args.batch:
     checkinList = [{
