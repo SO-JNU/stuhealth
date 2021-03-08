@@ -16,7 +16,7 @@ def buildHeader():
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko',
     }
 
-def checkin(jnuid, username, password, log, silent):
+def checkin(jnuid, username, password, log, silent, printJnuid):
     s = requests.Session()
     s.mount(
         'https://',
@@ -52,7 +52,7 @@ def checkin(jnuid, username, password, log, silent):
             except Exception as ex:
                 raise Exception('Failed to get JNUID')
         if not silent:
-            print(f'JNUID: {jnuid}')
+            print(f'JNUID: {jnuid if printJnuid else "*" * len(jnuid)}')
 
         checkinInfo = s.post(
             'https://stuhealth.jnu.edu.cn/api/user/stucheckin',

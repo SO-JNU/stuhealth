@@ -74,6 +74,11 @@ parser.add_argument(
     type=int,
     help='Number of threads for multithreading. Default is 8.'
 )
+parser.add_argument(
+    '--no-print-jnuid',
+    action='store_true',
+    help='Don\'t print jnuid while making a check-in.'
+)
 if IS_PYINSTALLER:
     parser.add_argument(
         '--no-update-check',
@@ -114,9 +119,9 @@ else:
         sys.exit(0)
     checkinList = [vars(args)]
 
-def run(jnuid, username, password, log, silent):
+def run(jnuid, username, password, log, silent, printJnuid):
     try:
-        stuhealth.checkin(jnuid, username, password, log, silent)
+        stuhealth.checkin(jnuid, username, password, log, silent, printJnuid)
     except Exception as ex:
         if not silent:
             print(f'Failed to check in: {type(ex).__name__} {ex}')
@@ -126,7 +131,7 @@ if args.multithread and len(checkinList) > 1:
         print('Warning: multithreading enabled, the output may be messed up.')
     with ThreadPoolExecutor(args.thread) as executor:
         for item in checkinList:
-            executor.submit(run, item['jnuid'], item['username'], item['password'], args.log, args.silent)
+            executor.submit(run, item['jnuid'], item['username'], item['password'], args.log, args.silent, not args.no_print_jnuid)
 else:
     for item in checkinList:
-        run(item['jnuid'], item['username'], item['password'], args.log, args.silent)
+        run(item['jnuid'], item['username'], item['password'], args.log, args.silent, not args.no_print_jnuid)
