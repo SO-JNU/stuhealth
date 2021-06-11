@@ -34,7 +34,7 @@ $ python3 stuhealth-cli.py -u 2017233333 -p p@SsW0Rd
 
 | 参数 | 简写 | 说明 |
 | - | - | - |
-| `--jnuid` | `-j` | 打卡者的 JNUID，填写后即可跳过登录过程直接打卡。<br>留空则尝试使用用户名和密码登录。<br>登录成功后也会在终端中输出对应的 JNUID。 |
+| `--jnuid` | `-j` | 打卡者的 JNUID，填写后即可跳过登录过程直接打卡。<br>留空则尝试使用用户名和密码登录。<br>登录成功后会在终端中输出对应的 JNUID，你也可以[自行获取](#自行获取-jnuid)。 |
 | `--username` | `-u` | 用户名，如果填写了 JNUID 则会被忽略。 |
 | `--password` | `-p` | 密码，如果填写了 JNUID 则会被忽略。 |
 | `--batch` | `-b` | 批量打卡的用户列表文件（参见[“批量打卡”](#批量打卡)部分）。<br>如果不需要批量打卡则可以留空。 |
@@ -125,3 +125,63 @@ jobs:
 ![](https://img20.360buyimg.com/myjd/jfs/t1/140991/34/13332/31473/6045b473E62883ca1/557a90fa0e6b0100.png)
 
 > 注意：GitHub Actions 不能保证任务一定可以准时按照 cron 表达式指定的时间运行，**实际执行时间可能会有数分钟的延迟**，可以参见[这里](https://upptime.js.org/blog/2021/01/22/github-actions-schedule-not-working/)的说明。
+
+## 自行获取 JNUID
+
+在打卡系统的登录界面输入用户名和密码，然后按下 <kbd>F12</kbd> 打开浏览器的开发者工具，在“控制台”/“Console”或其它类似功能的选项卡中粘贴并运行以下 JS 代码：
+
+<details>
+
+```js
+(async () => {
+
+if (!window.aesjs) {
+    await new Promise((resolve, reject) => {
+        const el = document.createElement('script');
+        el.src = 'https://cdn.jsdelivr.net/npm/aes-js@3/index.min.js';
+        el.onload = resolve;
+        el.onerror = reject;
+        document.body.appendChild(el);
+    });
+}
+
+const key = aesjs.utils.utf8.toBytes('xAt9Ye&SouxCJziN');
+const username = document.getElementById('zh').value || prompt('请输入学号：');
+const password = document.getElementById('passw').value || prompt('请输入密码：');
+const passwordEncrypted = (new aesjs.ModeOfOperation.cbc(
+    key,
+    key
+)).encrypt(aesjs.padding.pkcs7.pad(aesjs.utils.utf8.toBytes(password)))
+
+fetch(
+    'https://stuhealth.jnu.edu.cn/api/user/login',
+    {
+        method: 'post',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username,
+            password: btoa(String.fromCharCode.apply(null, passwordEncrypted)),
+        }),
+    }
+)
+    .then(res => res.json())
+    .then(res => {
+        if (!res.meta.success) throw new Error(res.meta.msg);
+        alert(`JNUID: ${res.data.jnuid}`);
+    })
+    .catch(alert);
+
+})()
+```
+
+</details>
+
+你也可以将以下代码（对上面的代码进行了压缩）加入浏览器书签：
+
+```js
+javascript:(async()=>{window.aesjs||await new Promise(((e,t)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/aes-js@3/index.min.js",s.onload=e,s.onerror=t,document.body.appendChild(s)}));const e=aesjs.utils.utf8.toBytes("xAt9Ye&SouxCJziN"),t=document.getElementById("zh").value||prompt("%E8%AF%B7%E8%BE%93%E5%85%A5%E5%AD%A6%E5%8F%B7%EF%BC%9A"),s=document.getElementById("passw").value||prompt("%E8%AF%B7%E8%BE%93%E5%85%A5%E5%AF%86%E7%A0%81%EF%BC%9A"),n=new aesjs.ModeOfOperation.cbc(e,e).encrypt(aesjs.padding.pkcs7.pad(aesjs.utils.utf8.toBytes(s)));fetch("https://stuhealth.jnu.edu.cn/api/user/login",{method:"post",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:t,password:btoa(String.fromCharCode.apply(null,n))})}).then((e=>e.json())).then((e=>{if(!e.meta.success)throw new Error(e.meta.msg);alert(`JNUID: ${e.data.jnuid}`)})).catch(alert)})()
+```
+
+代码中引入了 [aes-js](https://github.com/ricmoo/aes-js) 用于登录时必要的加密操作，**除打卡系统后台外你输入的信息并不会发送到其他地方**。运行后即可从弹窗中获取自己的 JNUID。
