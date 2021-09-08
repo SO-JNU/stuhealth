@@ -16,7 +16,7 @@ if IS_PYINSTALLER:
     from _version import GIT_COMMIT_TIMESTAMP
 
 parser = argparse.ArgumentParser(
-    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU GPLv3\nAuthor: Akarin' + (f'\nCommit: {GIT_COMMIT_HASH} ({GIT_COMMIT_TIME})' if IS_PYINSTALLER else ''),
+    epilog='Source on GitHub: https://github.com/SO-JNU/stuhealth\nLicense: GNU AGPLv3\nAuthor: Akarin' + (f'\nCommit: {GIT_COMMIT_HASH} ({GIT_COMMIT_TIME})' if IS_PYINSTALLER else ''),
     formatter_class=argparse.RawTextHelpFormatter
 )
 parser.add_argument(
@@ -24,7 +24,7 @@ parser.add_argument(
     '--jnuid',
     required=False,
     type=str,
-    help='Use JNUID to make a check-in directly, or leave it blank and login with username and password.'
+    help='Use JNUID to make a check-in directly. Deprecated, use login emulation instead!'
 )
 parser.add_argument(
     '-u',
@@ -119,6 +119,11 @@ else:
         sys.exit(0)
     checkinList = [vars(args)]
 
+for item in checkinList:
+    if item['jnuid']:
+        print('Warning: Checkin with user-given JNUID is deprecated, use login emulation with username and password instead!')
+        break
+
 def run(jnuid, username, password, log, silent, printJnuid):
     try:
         stuhealth.checkin(jnuid, username, password, log, silent, printJnuid)
@@ -128,7 +133,7 @@ def run(jnuid, username, password, log, silent, printJnuid):
 
 if args.multithread and len(checkinList) > 1:
     if not args.silent:
-        print('Warning: multithreading enabled, the output may be messed up.')
+        print('Warning: Multithreading is enabled, the output may be messed up.')
     with ThreadPoolExecutor(args.thread) as executor:
         for item in checkinList:
             executor.submit(run, item['jnuid'], item['username'], item['password'], args.log, args.silent, not args.no_print_jnuid)
