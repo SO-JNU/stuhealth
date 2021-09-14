@@ -1,8 +1,14 @@
 # stuhealth
 
-[![build](https://github.com/SO-JNU/stuhealth/workflows/build/badge.svg)](https://github.com/SO-JNU/stuhealth/actions)
+[![build](https://github.com/SO-JNU/stuhealth/workflows/build/badge.svg)](https://github.com/SO-JNU/stuhealth/actions) ![build](https://img.shields.io/badge/status-deprecated-red)
 
 使用 Python 编写的每日健康打卡命令行工具。
+
+2021 年 9 月 14 日起，打卡系统增加了滑动验证码，并且在服务端实装了二次验证，因此：
+
+* 基于抓包和 JavaScript 逆向的打卡机 **（包括这个 repo 在内）** 都已经失效了。
+* 基于 Selenium、Puppeteer、Playwright 等浏览器自动控制工具的打卡机，需要自行实现模拟拖动滑块的操作来突破滑动验证码。
+* 这个 repo 将设为 Archived 状态，代码和说明文本仅作为存档，不再更新。
 
 ## 快速上手
 
