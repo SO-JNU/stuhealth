@@ -3,5 +3,3 @@ build
 dist
 *.spec
 _version.py
-batch.json
-result.log
