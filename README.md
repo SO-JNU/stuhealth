@@ -47,7 +47,33 @@ $ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap
 | `--log` | `-l` | 将日志输出到指定的文件。 |
 | `--help` | `-h` | 显示参数说明。 |
 
-滑动验证码的自动完成通过[另一个 API 服务](https://github.com/SO-JNU/stuhealth-validator)实现，请在部署后将 API 地址和 token 填入命令行参数中。
+如果打卡成功或今日已打卡，则进程返回的状态码为 0，出现错误则为非 0。
+
+滑动验证码的自动完成通过另一个 API 服务实现，可以使用以下项目之一部署的实例：
+
+* [原版](https://github.com/SO-JNU/stuhealth-validate-server) 使用 Python、Selenium 和 GeckoDriver 实现。
+* [Docker 版](https://github.com/SO-JNU/stuhealth-validator) 基于原版代码封装成 Docker 容器。
+
+部署后，在自动打卡时将 API 地址和 token 填入命令行参数中即可。
+
+<details>
+
+<summary>API 调用规则</summary>
+
+`POST <validator-endpoint>`
+
+通过添加请求头 `Authorization: Bearer <validator-token>` 完成鉴权。
+
+```json
+{
+    // 可以用于模拟登录的，完成滑动验证码后得到的token
+    "validation_token": "...",
+    // 错误信息（如果有的话，此时状态码不是200）
+    "error": "..."
+}
+```
+
+</details>
 
 ## 使用 GitHub Actions 自动打卡
 

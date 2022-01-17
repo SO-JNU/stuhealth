@@ -95,7 +95,7 @@ if __name__ == '__main__':
                 ).json()['validation_token']
             except Exception as ex:
                 raise Exception(f'Failed to get validate token: {type(ex).__name__} {ex}')
-            print(f'Validate token: {validate}')
+            print(f'Validate token: {validate[:8]}{"*" * max(0, len(validate) - 16)}{validate[-8:]}')
 
             print('Trying to login and get JNUID with username and password.')
             try:
@@ -108,7 +108,7 @@ if __name__ == '__main__':
                     }),
                     headers=buildHeader(),
                 ).json()['data']['jnuid']
-                print(f'JNUID: {jnuid[:4]}{"*" * max(0, len(jnuid - 8))}{jnuid[-4:]}')
+                print(f'JNUID: {jnuid[:8]}{"*" * max(0, len(jnuid) - 16)}{jnuid[-8:]}')
             except:
                 raise Exception('Failed to get JNUID.')
 
@@ -189,8 +189,11 @@ if __name__ == '__main__':
 
             if success:
                 result = 'Checkin submitted.'
+            elif '重复提交问卷' in submit['meta']['msg']:
+                result = 'Checkin already submitted.'
             else:
                 raise Exception(submit['meta']['msg'])
+            print(result)
         except Exception as ex:
             result += str(ex)
             raise ex
