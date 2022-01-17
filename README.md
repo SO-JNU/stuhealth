@@ -126,3 +126,68 @@ jobs:
 ![](https://img20.360buyimg.com/myjd/jfs/t1/140991/34/13332/31473/6045b473E62883ca1/557a90fa0e6b0100.png)
 
 > 注意：GitHub Actions 不能保证任务一定可以准时按照 cron 表达式指定的时间运行，**实际执行时间可能会有数分钟的延迟**，可以参见[这里](https://upptime.js.org/blog/2021/01/22/github-actions-schedule-not-working/)的说明。
+
+## 批量打卡和邮件提醒
+
+使用下面的 Python 脚本就可以实现批量打卡了，在打卡失败时会通过 SMTP 服务发送邮件来进行提醒。
+
+<details>
+
+```python
+import email.header
+import email.mime.text
+import email.utils
+import smtplib
+import subprocess
+import time
+import typing
+
+# SMTP登录相关
+SMTP_HOST = '...'
+SMTP_USER = '...'
+SMTP_PASSWORD = '...'
+
+# 滑动验证码API相关
+VALIDATOR_ENDPOINT = '...'
+VALIDATOR_TOKEN = '...'
+
+if __name__ == '__main__':
+    for username, password, mailAddress in (
+        (2017233333, 'p@SsW0Rd', 'example@example.com'),
+        ...,
+    ):
+        username: int
+        password: str
+        mailAddress: typing.Optional[str]
+        executeTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
+        p = subprocess.Popen(
+            (
+                'python3',
+                '/path/to/stuhealth.py',
+                '-u', str(username),
+                '-p', password,
+                '-ve', VALIDATOR_ENDPOINT,
+                '-vt', VALIDATOR_TOKEN,
+            ),
+            stdout=subprocess.PIPE,
+        )
+        p.wait()
+        r = p.stdout.read().decode('utf-8')
+        print(r)
+        if p.returncode and mailAddress:
+            message = email.mime.text.MIMEText(
+                f'健康打卡失败，以下是打卡工具的输出：<br><pre><code>{r}</code></pre><br>用户名：{username}<br>执行时间：{executeTime}',
+                'html',
+                'utf-8',
+            )
+            message['From'] = email.utils.formataddr(('Stuhealth', SMTP_USER))
+            message['To'] = mailAddress
+            message['Subject'] = email.header.Header('[Stuhealth] 健康打卡失败通知', 'utf-8').encode()
+
+            with smtplib.SMTP_SSL(SMTP_HOST) as smtp:
+                smtp.login(SMTP_USER, SMTP_PASSWORD)
+                smtp.sendmail(SMTP_USER, (mailAddress,), message.as_string())
+```
+
+</details>
