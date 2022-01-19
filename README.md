@@ -17,13 +17,13 @@
 $ pip3 install -r requirements.txt
 
 # 输入学号和密码进行打卡
-$ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap1t0K3N
+$ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vt Ap1t0K3N
 ```
 
 推荐使用云服务器，设置 [Crontab](https://linuxtools-rst.readthedocs.io/zh_CN/latest/tool/crontab.html)（Linux）或[计划任务](https://juejin.cn/post/6844903939930865677)（Windows）实现自动化的每日打卡工作。
 
 ```bash
-59 13 * * * python3 /path/to/stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap1t0K3N
+59 13 * * * python3 /path/to/stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vt Ap1t0K3N
 ```
 
 > 对于未安装 Python 的 Windows 用户，可以在[这里](https://nightly.link/SO-JNU/stuhealth/workflows/build/master/stuhealth-cli)直接下载使用 PyInstaller 打包的可执行文件。
@@ -31,7 +31,7 @@ $ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap
 > 因为是命令行工具，所以需要在终端中运行（提示：在空白处按住 <kbd>Shift</kbd> 点击右键，选择“在此处打开 Powershell 窗口”可以打开终端），而不是直接双击。
 >
 > ```powershell
-> PS C:\path\to> .\stuhealth -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap1t0K3N
+> PS C:\path\to> .\stuhealth -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vt Ap1t0K3N
 > ```
 
 如果没有云服务器，也可以使用 GitHub Actions 实现自动打卡。（后述）
@@ -52,7 +52,7 @@ $ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vp Ap
 滑动验证码的自动完成通过另一个 API 服务实现，可以使用以下项目之一部署的实例：
 
 * [原版](https://github.com/SO-JNU/stuhealth-validate-server) 使用 Python、Selenium 和 GeckoDriver 实现。
-* [Docker 版](https://github.com/SO-JNU/stuhealth-validator) 基于原版代码封装成 Docker 容器。
+* [Docker 版](https://github.com/SO-JNU/stuhealth-validate-server-docker) 基于原版代码封装成 Docker 容器。
 
 部署后，在自动打卡时将 API 地址和 token 填入命令行参数中即可。
 
