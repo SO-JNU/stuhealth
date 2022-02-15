@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
         try:
             for i in range(3):
-                print(f'Fetching captcha validate token. (Attempt #{i}/3)')
+                print(f'Fetching captcha validate token. (Attempt #{i + 1}/3)')
                 try:
                     validate = s.post(
                         validatorEndpoint,
