@@ -85,15 +85,20 @@ if __name__ == '__main__':
         result = 'Failed to check in: '
 
         try:
-            print('Fetching captcha validate token.')
-            try:
-                validate = s.post(
-                    validatorEndpoint,
-                    headers={
-                        'Authorization': f'Bearer {validatorToken}',
-                    },
-                ).json()['validation_token']
-            except Exception as ex:
+            for i in range(3):
+                print(f'Fetching captcha validate token. (Attempt #{i}/3)')
+                try:
+                    validate = s.post(
+                        validatorEndpoint,
+                        headers={
+                            'Authorization': f'Bearer {validatorToken}',
+                        },
+                    ).json()['validation_token']
+                    attemptException = None
+                    break
+                except Exception as ex:
+                    attemptException = ex
+            if attemptException:
                 raise Exception(f'Failed to get validate token: {type(ex).__name__} {ex}')
             print(f'Validate token: {validate[:8]}{"*" * min(8, max(0, len(validate) - 16))}{validate[-8:]}')
 
