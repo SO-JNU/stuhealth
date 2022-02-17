@@ -99,7 +99,7 @@ if __name__ == '__main__':
                 except Exception as ex:
                     attemptException = ex
             if attemptException:
-                raise Exception(f'Failed to get validate token: {type(ex).__name__} {ex}')
+                raise Exception(f'Failed to get validate token: {type(attemptException).__name__} {attemptException}')
             print(f'Validate token: {validate[:8]}{"*" * min(8, max(0, len(validate) - 16))}{validate[-8:]}')
 
             print(f'Trying to login and get JNUID with username {username} and password.')
