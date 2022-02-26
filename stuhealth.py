@@ -103,19 +103,19 @@ if __name__ == '__main__':
             print(f'Validate token: {validate[:8]}{"*" * min(8, max(0, len(validate) - 16))}{validate[-8:]}')
 
             print(f'Trying to login and get JNUID with username {username} and password.')
-            try:
-                jnuid = s.post(
-                    'https://stuhealth.jnu.edu.cn/api/user/login',
-                    json.dumps({
-                        'username': username,
-                        'password': base64.b64encode(cipher.encrypt(pad(password.encode(), 16))).decode(),
-                        'validate': validate,
-                    }),
-                    headers=buildHeader(),
-                ).json()['data']['jnuid']
-                print(f'JNUID: {jnuid[:8]}{"*" * min(8, max(0, len(jnuid) - 16))}{jnuid[-8:]}')
-            except:
-                raise Exception('Failed to get JNUID.')
+            jnuid = s.post(
+                'https://stuhealth.jnu.edu.cn/api/user/login',
+                json.dumps({
+                    'username': username,
+                    'password': base64.b64encode(cipher.encrypt(pad(password.encode(), 16))).decode(),
+                    'validate': validate,
+                }),
+                headers=buildHeader(),
+            ).json()
+            if not jnuid['meta']['response']:
+                raise Exception(f'Failed to get JNUID: {jnuid["meta"]["msg"]}')
+            jnuid = ['data']['jnuid']
+            print(f'JNUID: {jnuid[:8]}{"*" * min(8, max(0, len(jnuid) - 16))}{jnuid[-8:]}')
 
             checkinInfo = s.post(
                 'https://stuhealth.jnu.edu.cn/api/user/stucheckin',
