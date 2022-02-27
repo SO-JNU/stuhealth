@@ -114,7 +114,7 @@ if __name__ == '__main__':
             ).json()
             if not jnuid['meta']['response']:
                 raise Exception(f'Failed to get JNUID: {jnuid["meta"]["msg"]}')
-            jnuid = ['data']['jnuid']
+            jnuid = jnuid['data']['jnuid']
             print(f'JNUID: {jnuid[:8]}{"*" * min(8, max(0, len(jnuid) - 16))}{jnuid[-8:]}')
 
             checkinInfo = s.post(
