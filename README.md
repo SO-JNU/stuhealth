@@ -45,6 +45,7 @@ $ python3 stuhealth.py -u 2017233333 -p p@SsW0Rd -ve https://example.com/ -vt Ap
 | `--validator-endpoint` | `-ve` | 滑动验证码 API 地址。 |
 | `--validator-token` | `-vt` | 滑动验证码 API 的鉴权 token。 |
 | `--log` | `-l` | 将日志输出到指定的文件。 |
+| `--dry-run` | `-dr` | 试运行模式，输出将要提交的打卡数据，但并不会真的提交。 |
 | `--help` | `-h` | 显示参数说明。 |
 
 如果打卡成功或今日已打卡，则进程返回的状态码为 0，出现错误则为非 0。

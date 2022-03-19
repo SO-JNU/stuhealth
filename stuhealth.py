@@ -62,6 +62,12 @@ if __name__ == '__main__':
         type=str,
         help='Write log to the specified path.'
     )
+    parser.add_argument(
+        '-dr',
+        '--dry-run',
+        action='store_true',
+        help='Print checkin data but don\'t submit it.'
+    )
     args = parser.parse_args()
 
     username: str = args.username
@@ -144,7 +150,7 @@ if __name__ == '__main__':
             mainTable = {
                 k: v
                 for k, v in lastCheckin['mainTable'].items()
-                if v and not k in {'personType', 'createTime', 'del', 'id', 'other', 'passAreaC2', 'passAreaC3', 'passAreaC4'}
+                if v and k not in {'personType', 'createTime', 'del', 'id', 'other', 'passAreaC2', 'passAreaC3', 'passAreaC4', 'language', 'leaveTransportationOther'}
             }
             mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
 
@@ -175,30 +181,46 @@ if __name__ == '__main__':
                 secondTable = {
                     k: v
                     for k, v in lastCheckin['secondTable'].items()
-                    if v and not k in {'mainId', 'id'}
+                    if v and k not in {'mainId', 'id'}
                 }
 
-            submit = s.post(
-                'https://stuhealth.jnu.edu.cn/api/write/main',
-                json.dumps(
+            if args.dry_run:
+                print('Dry run mode enabled. Checkin data will not be submitted.')
+                print('You can submit it manually with the command:')
+                print('$ curl -X POST -H "Content-Type: application/json" -d ... https://stuhealth.jnu.edu.cn/api/write/main')
+                print('Checkin data:')
+                print(json.dumps(
                     {
                         'jnuid': jnuid,
                         'mainTable': mainTable,
                         'secondTable': secondTable,
                     },
-                    ensure_ascii=False
-                ).encode('utf-8'),
-                headers=buildHeader(),
-            ).json()
-            success = submit['meta']['success']
-
-            if success:
-                result = 'Checkin submitted.'
-            elif '重复提交问卷' in submit['meta']['msg']:
-                result = 'Checkin already submitted.'
+                    ensure_ascii=False,
+                    indent=4,
+                    separators=(',', ': '),
+                ))
             else:
-                raise Exception(submit['meta']['msg'])
-            print(result)
+                submit = s.post(
+                    'https://stuhealth.jnu.edu.cn/api/write/main',
+                    json.dumps(
+                        {
+                            'jnuid': jnuid,
+                            'mainTable': mainTable,
+                            'secondTable': secondTable,
+                        },
+                        ensure_ascii=False,
+                    ).encode('utf-8'),
+                    headers=buildHeader(),
+                ).json()
+                success = submit['meta']['success']
+
+                if success:
+                    result = 'Checkin submitted.'
+                elif '重复提交问卷' in submit['meta']['msg']:
+                    result = 'Checkin already submitted.'
+                else:
+                    raise Exception(submit['meta']['msg'])
+                print(result)
         except Exception as ex:
             result += str(ex)
             raise ex
