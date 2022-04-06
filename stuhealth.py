@@ -109,7 +109,7 @@ if __name__ == '__main__':
             print(f'Validate token: {validate[:8]}{"*" * min(8, max(0, len(validate) - 16))}{validate[-8:]}')
 
             print(f'Trying to login and get JNUID with username {username} and password.')
-            jnuid = s.post(
+            login = s.post(
                 'https://stuhealth.jnu.edu.cn/api/user/login',
                 json.dumps({
                     'username': username,
@@ -118,109 +118,101 @@ if __name__ == '__main__':
                 }),
                 headers=buildHeader(),
             ).json()
-            if not jnuid['meta']['response']:
-                raise Exception(f'Failed to get JNUID: {jnuid["meta"]["msg"]}')
-            jnuid = jnuid['data']['jnuid']
+            if not login['meta']['response']:
+                raise Exception(f'Failed to get JNUID: {login["meta"]["msg"]}')
+            jnuid = login['data']['jnuid']
+            idType = login['data']['idtype']
             print(f'JNUID: {jnuid[:8]}{"*" * min(8, max(0, len(jnuid) - 16))}{jnuid[-8:]}')
 
-            checkinInfo = s.post(
-                'https://stuhealth.jnu.edu.cn/api/user/stucheckin',
-                json.dumps({
-                    'jnuid': jnuid,
-                }),
-                headers=buildHeader(),
-            ).json()
-            if not checkinInfo['meta']['success']:
-                raise Exception('Invalid JNUID.')
-            for item in checkinInfo['data']['checkinInfo']:
-                if item['flag'] == True:
-                    checkinInfo = item
-                    break
-
-            print(f'Fetching last checkin info #{checkinInfo["id"]} ({checkinInfo["date"]})')
-            lastCheckin = s.post(
-                'https://stuhealth.jnu.edu.cn/api/user/review',
-                json.dumps({
-                    'jnuid': jnuid,
-                    'id': str(checkinInfo["id"]),
-                }),
-                headers=buildHeader(),
-            ).json()['data']
-
-            mainTable = {
-                k: v
-                for k, v in lastCheckin['mainTable'].items()
-                if v and k not in {'personType', 'createTime', 'del', 'id', 'other', 'passAreaC2', 'passAreaC3', 'passAreaC4', 'language', 'leaveTransportationOther'}
-            }
-            mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
-
-            if lastCheckin['secondTable'] is None:
-                if 'inChina' not in mainTable:
-                    mainTable['inChina'] = '1'
-                for key in {'personC1', 'personC1id', 'personC2', 'personC2id', 'personC3', 'personC3id', 'personC4'}:
-                    if key not in mainTable:
-                        mainTable[key] = ''
-                if mainTable['inChina'] == '1':
-                    secondTable = {
-                        'other1': mainTable['inChina'],
-                        'other3': mainTable['personC4'],
-                        'other4': mainTable['personC1'],
-                        'other5': mainTable['personC1id'],
-                        'other6': mainTable['personC2'],
-                        'other7': mainTable['personC2id'],
-                        'other8': mainTable['personC3'],
-                        'other9': mainTable['personC3id'],
-                    }
-                elif mainTable['inChina'] == '2':
-                    secondTable = {
-                        'other1': mainTable['inChina'],
-                        'other2': mainTable['countryArea'],
-                        'other3': mainTable['personC4'],
-                    }
+            if login['meta']['code'] == 201 and not args.dry_run:
+                result = 'Checkin already submitted.'
             else:
-                secondTable = {
-                    k: v
-                    for k, v in lastCheckin['secondTable'].items()
-                    if v and k not in {'mainId', 'id'}
-                }
-
-            if args.dry_run:
-                print('Dry run mode enabled. Checkin data will not be submitted.')
-                print('You can submit it manually with the command:')
-                print('$ curl -X POST -H "Content-Type: application/json" -d ... https://stuhealth.jnu.edu.cn/api/write/main')
-                print('Checkin data:')
-                print(json.dumps(
-                    {
+                stuinfo = s.post(
+                    'https://stuhealth.jnu.edu.cn/api/user/stuinfo',
+                    json.dumps({
+                        'idType': idType,
                         'jnuid': jnuid,
-                        'mainTable': mainTable,
-                        'secondTable': secondTable,
-                    },
-                    ensure_ascii=False,
-                    indent=4,
-                    separators=(',', ': '),
-                ))
-            else:
-                submit = s.post(
-                    'https://stuhealth.jnu.edu.cn/api/write/main',
-                    json.dumps(
+                    }),
+                    headers=buildHeader(),
+                ).json()
+                mainTable = {
+                    k: v
+                    for k, v in stuinfo['data']['mainTable'].items()
+                    if v and k not in {'personType', 'createTime', 'del', 'id', 'other', 'passAreaC2', 'passAreaC3', 'passAreaC4', 'language', 'leaveTransportationOther'}
+                }
+                mainTable['declareTime'] = time.strftime('%Y-%m-%d', time.localtime())
+                mainTable['personName'] = stuinfo['data']['xm']
+                mainTable['sex'] = stuinfo['data']['xbm']
+                mainTable['professionName'] = stuinfo['data']['zy']
+                mainTable['collegeName'] = stuinfo['data']['yxsmc']
+
+                if stuinfo['data']['secondTable'] is None:
+                    if 'inChina' not in mainTable:
+                        mainTable['inChina'] = '1'
+                    for key in {'personC1', 'personC1id', 'personC2', 'personC2id', 'personC3', 'personC3id', 'personC4'}:
+                        if key not in mainTable:
+                            mainTable[key] = ''
+                    if mainTable['inChina'] == '1':
+                        secondTable = {
+                            'other1': mainTable['inChina'],
+                            'other3': mainTable['personC4'],
+                            'other4': mainTable['personC1'],
+                            'other5': mainTable['personC1id'],
+                            'other6': mainTable['personC2'],
+                            'other7': mainTable['personC2id'],
+                            'other8': mainTable['personC3'],
+                            'other9': mainTable['personC3id'],
+                        }
+                    elif mainTable['inChina'] == '2':
+                        secondTable = {
+                            'other1': mainTable['inChina'],
+                            'other2': mainTable['countryArea'],
+                            'other3': mainTable['personC4'],
+                        }
+                else:
+                    secondTable = {
+                        k: v
+                        for k, v in stuinfo['data']['secondTable'].items()
+                        if v and k not in {'mainId', 'id'}
+                    }
+
+                if args.dry_run:
+                    print('Dry run mode enabled. Checkin data will not be submitted.')
+                    print('You can submit it manually with the command:')
+                    print('$ curl -X POST -H "Content-Type: application/json" -d ... https://stuhealth.jnu.edu.cn/api/write/main')
+                    print('Checkin data:')
+                    print(json.dumps(
                         {
                             'jnuid': jnuid,
                             'mainTable': mainTable,
                             'secondTable': secondTable,
                         },
                         ensure_ascii=False,
-                    ).encode('utf-8'),
-                    headers=buildHeader(),
-                ).json()
-                success = submit['meta']['success']
-
-                if success:
-                    result = 'Checkin submitted.'
-                elif '重复提交问卷' in submit['meta']['msg']:
-                    result = 'Checkin already submitted.'
+                        indent=4,
+                        separators=(',', ': '),
+                    ))
+                    result = 'Dry run mode enabled.'
                 else:
-                    raise Exception(submit['meta']['msg'])
-                print(result)
+                    submit = s.post(
+                        'https://stuhealth.jnu.edu.cn/api/write/main',
+                        json.dumps(
+                            {
+                                'jnuid': jnuid,
+                                'mainTable': mainTable,
+                                'secondTable': secondTable,
+                            },
+                            ensure_ascii=False,
+                        ).encode('utf-8'),
+                        headers=buildHeader(),
+                    ).json()
+                    success = submit['meta']['success']
+
+                    if success:
+                        result = 'Checkin submitted.'
+                    else:
+                        raise Exception(submit['meta']['msg'])
+
+            print(result)
         except Exception as ex:
             result += str(ex)
             raise ex
