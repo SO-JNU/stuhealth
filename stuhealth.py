@@ -8,6 +8,7 @@ import time
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
+from urllib import parse
 
 IS_PYINSTALLER = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
@@ -82,13 +83,17 @@ if __name__ == '__main__':
 
     try:
         s = requests.Session()
-        s.hooks = {
-            'response': lambda r, *args, **kwargs: r.raise_for_status(),
-        }
+        s.hooks['response'].append(lambda r, *args, **kwargs: r.raise_for_status())
         key = b'xAt9Ye&SouxCJziN'
         cipher = AES.new(key, AES.MODE_CBC, key)
         success = False
         result = 'Failed to check in: '
+
+        print('Getting verifyID.')
+        s.get('https://stuhealth.jnu.edu.cn/', allow_redirects=False)
+        r = s.get('https://stuhealth.jnu.edu.cn/jnu_authentication/public/redirect', allow_redirects=False)
+        verifyID = parse.parse_qs(parse.urlparse(r.headers['Location']).query)['verifyID'][0]
+        s.get('https://auth7.jnu.edu.cn/wechat_auth/wechat/wechatScanAsync', params={'verifyID': verifyID})
 
         try:
             for i in range(3):
