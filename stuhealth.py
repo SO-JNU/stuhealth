@@ -90,8 +90,7 @@ if __name__ == '__main__':
         result = 'Failed to check in: '
 
         print('Getting verifyID.')
-        s.get('https://stuhealth.jnu.edu.cn/', allow_redirects=False)
-        r = s.get('https://stuhealth.jnu.edu.cn/jnu_authentication/public/redirect', allow_redirects=False)
+        r = s.get('https://stuhealth.jnu.edu.cn/', allow_redirects=False)
         verifyID = parse.parse_qs(parse.urlparse(r.headers['Location']).query)['verifyID'][0]
         s.get('https://auth7.jnu.edu.cn/wechat_auth/wechat/wechatScanAsync', params={'verifyID': verifyID})
 
